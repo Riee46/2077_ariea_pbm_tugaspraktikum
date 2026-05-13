@@ -18,8 +18,10 @@ class _SubmitScreenState extends State<SubmitScreen> {
   bool _isLoading = false;
 
   Future<void> _submitAssignment() async {
+    // Validasi form
     if (!_formKey.currentState!.validate()) return;
 
+    // Ambil dan validasi harga
     final name = _nameController.text.trim();
     final price = int.tryParse(_priceController.text.trim());
     if (price == null) {
@@ -35,29 +37,38 @@ class _SubmitScreenState extends State<SubmitScreen> {
     final githubUrl = _githubController.text.trim();
 
     setState(() => _isLoading = true);
-    final success = await _apiService.submitAssignment(
-      name: name,
-      price: price,
-      description: description,
-      githubUrl: githubUrl,
-    );
-    setState(() => _isLoading = false);
 
-    if (success) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tugas berhasil disubmit!'),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      final success = await _apiService.submitAssignment(
+        name: name,
+        price: price,
+        description: description,
+        githubUrl: githubUrl,
       );
-      Navigator.pop(context, true);
-    } else {
+
+      setState(() => _isLoading = false);
+
+      if (success) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Tugas berhasil disubmit!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Submit gagal. Cek kembali data.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Submit gagal. Periksa data dan coba lagi.'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     }
   }
@@ -94,7 +105,11 @@ class _SubmitScreenState extends State<SubmitScreen> {
                   Expanded(
                     child: Text(
                       'Pastikan data benar. Data tidak dapat diubah setelah disubmit.',
-                      style: TextStyle(color: Colors.amber[900], fontSize: 13, height: 1.4),
+                      style: TextStyle(
+                        color: Colors.amber[900],
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                 ],
@@ -192,11 +207,17 @@ class _SubmitScreenState extends State<SubmitScreen> {
                   ? const SizedBox(
                       height: 24,
                       width: 24,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
                   : const Text(
                       'Submit Sekarang',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
             ),
           ],

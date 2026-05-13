@@ -63,7 +63,6 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-
       final dataField = jsonResponse['data'];
 
       List<dynamic> productsJson = [];
@@ -137,6 +136,17 @@ class ApiService {
       }),
     );
 
-    return response.statusCode == 200;
+    print('Submit response status: ${response.statusCode}');
+    print('Submit response body: ${response.body}');
+
+    // Terima status 200 atau 201
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      bool isSuccess =
+          jsonResponse['success'] ?? jsonResponse['status'] ?? true;
+      return isSuccess;
+    } else {
+      return false;
+    }
   }
 }
